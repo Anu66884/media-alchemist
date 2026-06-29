@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Alchemist 🎙️</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-icon">⚗️</span>
+      <span class="logo-text">Media <span class="accent">Alchemist</span></span>
+    </div>
+    <span class="header-tag">Powered by Groq AI</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow">AI-Powered Content Engine</div>
+    <h1 class="hero-title">Turn Audio Into<br /><span class="gradient-text">A Full Content Kit</span></h1>
+    <p class="hero-sub">Upload a podcast or paste a YouTube link. Get show notes, a blog post, and a complete social media kit — in seconds.</p>
+    <div class="hero-chips">
+      <span class="chip">🎙️ Auto-Transcription</span>
+      <span class="chip">▶️ YouTube Support</span>
+      <span class="chip">📝 Blog Post</span>
+      <span class="chip">📋 Show Notes</span>
+      <span class="chip">📱 Social Kit</span>
+    </div>
+  </section>
+
+  <main class="container">
+
+    <!-- Input Mode -->
+    <div class="card">
+      <div class="card-label">Step 1 — Media Input</div>
+      <div class="card-body">
+
+        <div class="mode-switcher">
+          <button class="mode-btn active" id="modeFileBtn" onclick="switchMode('file')">🎧 Upload Audio File</button>
+          <button class="mode-btn" id="modeYtBtn" onclick="switchMode('youtube')">▶️ YouTube Link</button>
+        </div>
+
+        <!-- File upload -->
+        <div id="filePanel">
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="audio_file" accept=".mp3,.wav,.m4a,.ogg,.flac" hidden />
+            <div class="drop-inner" id="dropInner">
+              <div class="drop-icon">🎧</div>
+              <p class="drop-title">Drop your audio file here</p>
+              <p class="drop-sub">MP3 · WAV · M4A · OGG · FLAC &nbsp;·&nbsp; Max 50 MB</p>
+              <button class="btn-outline" type="button" onclick="document.getElementById('audio_file').click()">Browse Files</button>
+            </div>
+            <div class="file-preview hidden" id="filePreview">
+              <span class="file-icon">🎵</span>
+              <div class="file-info">
+                <span class="file-name" id="fileName"></span>
+                <span class="file-size" id="fileSize"></span>
+              </div>
+              <button class="btn-remove" type="button" onclick="clearFile()">✕</button>
+            </div>
+          </div>
+          <audio id="audioPlayer" controls class="audio-player hidden"></audio>
+        </div>
+
+        <!-- YouTube -->
+        <div id="youtubePanel" class="hidden">
+          <div class="yt-input-wrap">
+            <span class="yt-icon">▶️</span>
+            <input type="text" id="yt_url" placeholder="https://www.youtube.com/watch?v=..." />
+          </div>
+          <p class="field-hint">Paste any public YouTube video URL — audio is extracted automatically.</p>
+          <div id="ytPreviewWrap" class="hidden">
+            <iframe id="ytPreviewFrame" width="100%" height="215" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen style="border-radius:10px;margin-top:12px;"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="card">
+      <div class="card-label">Step 2 — Configure</div>
+      <div class="card-body config-grid">
+        <div class="field-group">
+          <label class="field-label" for="tone">Content Tone</label>
+          <select id="tone">
+            <option value="Professional">Professional — polished &amp; authoritative</option>
+            <option value="Casual" selected>Casual — warm &amp; conversational</option>
+            <option value="Hype">Hype — energetic &amp; punchy</option>
+            <option value="Technical">Technical — precise &amp; detail-rich</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="audience">Target Audience</label>
+          <select id="audience">
+            <option value="General" selected>General</option>
+            <option value="B2B / Founders">B2B / Founders</option>
+            <option value="Developers">Developers</option>
+            <option value="Creators & Marketers">Creators &amp; Marketers</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Run -->
+    <button class="btn-run" id="runBtn" type="button" onclick="runAlchemy()">
+      <span class="btn-run-icon">🚀</span>
+      <span id="runBtnLabel">Run Media Alchemy</span>
+    </button>
+
+    <div class="error-box hidden" id="errorBox">
+      <span class="error-icon">⚠️</span>
+      <span id="errorMsg"></span>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-panel hidden" id="progressPanel">
+      <div class="progress-steps">
+        <div class="prog-step" id="step1">
+          <div class="prog-dot"></div>
+          <div class="prog-text">
+            <span class="prog-label">Extracting audio</span>
+            <span class="prog-sub" id="step1sub">Preparing your media…</span>
+          </div>
+        </div>
+        <div class="prog-step" id="step2">
+          <div class="prog-dot"></div>
+          <div class="prog-text">
+            <span class="prog-label">Transcribing with Whisper</span>
+            <span class="prog-sub">Converting speech to text…</span>
+          </div>
+        </div>
+        <div class="prog-step" id="step3">
+          <div class="prog-dot"></div>
+          <div class="prog-text">
+            <span class="prog-label">Generating show notes</span>
+            <span class="prog-sub">Timestamps &amp; summary…</span>
+          </div>
+        </div>
+        <div class="prog-step" id="step4">
+          <div class="prog-dot"></div>
+          <div class="prog-text">
+            <span class="prog-label">Writing blog &amp; social kit</span>
+            <span class="prog-sub">LLaMA 3 at work…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="output-panel hidden" id="outputPanel">
+      <div class="output-header">
+        <h2 class="output-title">✅ Your Content Kit is Ready</h2>
+        <button class="btn-outline small" onclick="resetAll()">↺ Start Over</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="show-notes">📋 Show Notes</button>
+        <button class="tab" data-tab="blog-post">📝 Blog Post</button>
+        <button class="tab" data-tab="social-kit">📱 Social Kit</button>
+        <button class="tab" data-tab="transcript">🎙️ Transcript</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-show-notes">
+        <div class="panel-toolbar">
+          <span class="panel-tag">Show Notes &amp; Timestamps</span>
+          <button class="btn-copy" onclick="copyRaw('showNotesRaw')">📋 Copy</button>
+          <button class="btn-download" onclick="downloadTxt('showNotesRaw','show_notes.md')">⬇ Download</button>
+        </div>
+        <div class="markdown-output" id="showNotesContent"></div>
+        <textarea id="showNotesRaw" hidden></textarea>
+      </div>
+
+      <div class="tab-panel" id="tab-blog-post">
+        <div class="panel-toolbar">
+          <span class="panel-tag">Blog Article</span>
+          <button class="btn-copy" onclick="copyRaw('blogPostRaw')">📋 Copy</button>
+          <button class="btn-download" onclick="downloadTxt('blogPostRaw','blog_post.md')">⬇ Download</button>
+        </div>
+        <div class="markdown-output" id="blogPostContent"></div>
+        <textarea id="blogPostRaw" hidden></textarea>
+      </div>
+
+      <div class="tab-panel" id="tab-social-kit">
+        <div class="social-cards">
+          <div class="social-card" id="sc-linkedin">
+            <div class="sc-header">
+              <div class="sc-platform"><span class="sc-icon">💼</span><span>LinkedIn Post</span></div>
+              <div class="sc-actions">
+                <button class="btn-copy small" onclick="copyRaw('linkedinRaw')">📋 Copy</button>
+                <button class="btn-download small" onclick="downloadTxt('linkedinRaw','linkedin_post.txt')">⬇ .txt</button>
+              </div>
+            </div>
+            <div class="sc-body" id="linkedinContent"></div>
+            <textarea id="linkedinRaw" hidden></textarea>
+          </div>
+
+          <div class="social-card" id="sc-twitter">
+            <div class="sc-header">
+              <div class="sc-platform"><span class="sc-icon">🐦</span><span>Twitter / X Thread</span></div>
+              <div class="sc-actions">
+                <button class="btn-copy small" onclick="copyRaw('twitterRaw')">📋 Copy</button>
+                <button class="btn-download small" onclick="downloadTxt('twitterRaw','twitter_thread.txt')">⬇ .txt</button>
+              </div>
+            </div>
+            <div class="tweets-list" id="twitterContent"></div>
+            <textarea id="twitterRaw" hidden></textarea>
+          </div>
+
+          <div class="social-card" id="sc-instagram">
+            <div class="sc-header">
+              <div class="sc-platform"><span class="sc-icon">📸</span><span>Instagram / TikTok Caption</span></div>
+              <div class="sc-actions">
+                <button class="btn-copy small" onclick="copyRaw('instagramRaw')">📋 Copy</button>
+                <button class="btn-download small" onclick="downloadTxt('instagramRaw','instagram_caption.txt')">⬇ .txt</button>
+              </div>
+            </div>
+            <div class="sc-body" id="instagramContent"></div>
+            <textarea id="instagramRaw" hidden></textarea>
+          </div>
+        </div>
+        <button class="btn-outline full-width mt-16" onclick="downloadTxt('socialKitRaw','social_media_kit.txt')">⬇ Download Full Social Kit</button>
+        <textarea id="socialKitRaw" hidden></textarea>
+      </div>
+
+      <div class="tab-panel" id="tab-transcript">
+        <div class="panel-toolbar">
+          <span class="panel-tag">Raw Transcript</span>
+          <button class="btn-copy" onclick="copyRaw('transcriptRaw')">📋 Copy</button>
+          <button class="btn-download" onclick="downloadTxt('transcriptRaw','transcript.txt')">⬇ Download</button>
+        </div>
+        <div class="transcript-box" id="transcriptContent"></div>
+        <textarea id="transcriptRaw" hidden></textarea>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    Media Alchemist &nbsp;·&nbsp; Groq Whisper + LLaMA 3.3 &nbsp;·&nbsp; Flask + Vanilla JS
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
