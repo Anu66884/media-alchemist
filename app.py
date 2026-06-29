@@ -13,7 +13,7 @@ app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB
 ALLOWED_EXTENSIONS = {"mp3", "wav", "m4a", "ogg", "flac"}
 
 # ── PUT YOUR GROQ API KEY HERE ────────────────────────────────────────────────
-GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"
+GROQ_API_KEY = "PUT YOUR GROQ API KEY HERE"
 # ─────────────────────────────────────────────────────────────────────────────
 
 TONE_GUIDE = {

@@ -77,8 +77,17 @@ Then open `http://127.0.0.1:5000` in your browser.
 ### Home Screen
 Clean, minimal input panel with file upload and YouTube link support.
 
-### Output Dashboard
+![Home Screen](images/home.png)
+
+### Results Dashboard
 Four-tab results panel — Show Notes, Blog Post, Social Kit, and Transcript — each with one-click copy and download.
+
+![Results](images/results.png)
+
+### Social Media Kit
+Platform-native content for LinkedIn, Twitter/X, and Instagram — each with one-click copy and download buttons.
+
+![Social Kit](images/social.png)
 
 ---
 
